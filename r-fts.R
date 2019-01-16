@@ -7,7 +7,7 @@ flatten = function(x){
   return(data.frame(t(unlist(x)),stringsAsFactors=F))
 }
 
-fts.flow = function(boundary=NULL,filterBy=NULL,user=NULL,pass=NULL){
+fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,user=NULL,pass=NULL){
   base.url = paste0("https://api.hpc.tools/v1/public/fts/flow?",boundary)
   if(is.null(boundary)){
     stop("Boundary is a required field.")
@@ -16,6 +16,10 @@ fts.flow = function(boundary=NULL,filterBy=NULL,user=NULL,pass=NULL){
     filterByParam = paste0("filterBy=",filterBy)
     filterByCollapse = paste(filterByParam,collapse="&")
     base.url = paste(base.url,filterByCollapse,sep="&")
+  }
+  if(!is.null(groupBy)){
+    groupByParam = paste0("groupby=",groupBy)
+    base.url = paste(base.url,groupByParam,sep="&")
   }
   if(!is.null(user) & !is.null(pass)){
     res = GET(
@@ -27,15 +31,24 @@ fts.flow = function(boundary=NULL,filterBy=NULL,user=NULL,pass=NULL){
   }
   if(res$status_code==200){
     dat = content(res)
-    data_list = list(
-      "incoming"=data.frame(dat$data$incoming,stringsAsFactors=F),
-      "outgoing"=data.frame(dat$data$outgoing,stringsAsFactors=F),
-      "internal"=data.frame(dat$data$internal,stringsAsFactors=F)
-    )
-    flows = dat$data$flows
-    flow_df = rbindlist(lapply(flows,flatten),fill=T)
-    data_list[["flows"]] = flow_df
-    return(data_list)
+    if("flows" %in% names(dat$data)){
+      data_list = list(
+        "incoming"=data.frame(dat$data$incoming,stringsAsFactors=F),
+        "outgoing"=data.frame(dat$data$outgoing,stringsAsFactors=F),
+        "internal"=data.frame(dat$data$internal,stringsAsFactors=F)
+      )
+      flows = dat$data$flows
+      flow_df = rbindlist(lapply(flows,flatten),fill=T)
+      data_list[["flows"]] = flow_df
+      return(data_list)
+    }else{
+      data_list = list()
+      for(name in names(dat$data)){
+        data_list[[name]] = rbindlist(lapply(dat$data[name],flatten),fill=T)
+      }
+      return(data_list)
+    }
+    
   }else{
     stop("HTTP error: ",res$status_code)
   }
@@ -43,5 +56,6 @@ fts.flow = function(boundary=NULL,filterBy=NULL,user=NULL,pass=NULL){
 
 test = fts.flow(
   boundary="year=2015",
-  filterBy=c("destinationGlobalClusterCode:HEA","destinationLocationID:114,115")
+  filterBy=c("destinationGlobalClusterCode:HEA","destinationLocationID:114,115"),
+  groupBy="organization"
   )
