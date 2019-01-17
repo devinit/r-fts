@@ -70,7 +70,7 @@ fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,user=NULL,pass=NULL
   }
 }
 
-test = fts.flow(
+test.flow = fts.flow(
   boundary="year=2015",
   filterBy=c("destinationGlobalClusterCode:HEA","destinationLocationID:114,115"),
   groupBy="organization"
