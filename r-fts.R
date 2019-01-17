@@ -1,4 +1,4 @@
-list.of.packages <- c("jsonlite","data.table","httr")
+list.of.packages <- c("data.table","httr","reshape")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only=T)
@@ -44,7 +44,23 @@ fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,user=NULL,pass=NULL
     }else{
       data_list = list()
       for(name in names(dat$data)){
-        data_list[[name]] = rbindlist(lapply(dat$data[name],flatten),fill=T)
+        report = rbindlist(lapply(dat$data[name],flatten),fill=T)
+        ends_in_numeric = grepl("^[[:digit:]]+$",substr(names(report),nchar(names(report)),nchar(names(report))))
+        if(sum(ends_in_numeric)>2){
+          numeric_names = unique(gsub("[\\.[:digit:]]+$","",names(report)[ends_in_numeric]))
+          names(report)[which(names(report) %in% numeric_names)] = paste0(names(report)[which(names(report) %in% numeric_names)],".0")
+          ends_in_numeric = grepl("^[[:digit:]]+$",substr(names(report),nchar(names(report)),nchar(names(report))))
+          report_meta = report[,!ends_in_numeric,with=F]
+          report_data = report[,ends_in_numeric,with=F]
+          report_data = melt(report_data,measure.vars=names(report_data))
+          num_indexes = gregexpr("[\\.[:digit:]]+$",report_data$variable)
+          report_data$index = unlist(regmatches(report_data$variable,num_indexes))
+          report_data$index = substr(report_data$index,2,nchar(report_data$index))
+          report_data$variable = gsub("[\\.[:digit:]]+$","",report_data$variable)
+          report_data = dcast(report_data,index~variable)
+          report = list("data"=report_data,"meta"=report_meta)
+        }
+        data_list[[name]] = report
       }
       return(data_list)
     }
