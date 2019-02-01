@@ -7,7 +7,7 @@ flatten = function(x){
   return(data.frame(t(unlist(x)),stringsAsFactors=F))
 }
 
-fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,user=NULL,pass=NULL){
+fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,auth=NULL){
   base.url = paste0("https://api.hpc.tools/v1/public/fts/flow?",boundary)
   if(is.null(boundary)){
     stop("Boundary is a required field.")
@@ -21,10 +21,10 @@ fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,user=NULL,pass=NULL
     groupByParam = paste0("groupby=",groupBy)
     base.url = paste(base.url,groupByParam,sep="&")
   }
-  if(!is.null(user) & !is.null(pass)){
+  if(!is.null(auth)){
     res = GET(
       base.url
-      ,authenticate(user, pass)
+      ,authenticate(auth$user, auth$pass)
     )
   }else{
     res = GET(base.url)
@@ -65,6 +65,179 @@ fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,user=NULL,pass=NULL
       return(data_list)
     }
     
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
+fts.cluster = function(auth=NULL){
+  base.url = "https://api.hpc.tools/v1/public/global-cluster"
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = rbindlist(lapply(lapply(dat$data,flatten),data.frame),fill=T)
+    }
+    return(data)
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
+fts.locat = function(auth=NULL){
+  base.url = "https://api.hpc.tools/v1/public/location"
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = rbindlist(lapply(lapply(dat$data,flatten),data.frame),fill=T)
+    }
+    return(data)
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
+fts.org = function(auth=NULL){
+  base.url = "https://api.hpc.tools/v1/public/organization"
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = rbindlist(lapply(lapply(dat$data,flatten),data.frame),fill=T)
+    }
+    return(data)
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
+fts.proj.by.code = function(code=NULL,auth=NULL){
+  base.url = paste0("https://api.hpc.tools/v1/public/project/code/",code)
+  if(is.null(code)){
+    stop("Code is a required field.")
+  }
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = data.frame(flatten(dat$data))
+    }
+    return(data)
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
+fts.proj.by.id = function(id=NULL,auth=NULL){
+  base.url = paste0("https://api.hpc.tools/v1/public/project/id/",id)
+  if(is.null(id)){
+    stop("ID is a required field.")
+  }
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = data.frame(flatten(dat$data))
+    }
+    return(data)
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
+fts.proj.by.plan.id = function(plan.id=NULL,auth=NULL){
+  base.url = paste0("https://api.hpc.tools/v1/public/project/plan/",plan.id)
+  if(is.null(plan.id)){
+    stop("Plan ID is a required field.")
+  }
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = rbindlist(lapply(lapply(dat$data,flatten),data.frame),fill=T)
+    }
+    return(data)
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
+fts.proj.by.plan.code = function(plan.code=NULL,auth=NULL){
+  base.url = paste0("https://api.hpc.tools/v1/public/project/plancode/",plan.code)
+  if(is.null(plan.code)){
+    stop("Plan code is a required field.")
+  }
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = rbindlist(lapply(lapply(dat$data,flatten),data.frame),fill=T)
+    }
+    return(data)
   }else{
     stop("HTTP error: ",res$status_code)
   }
