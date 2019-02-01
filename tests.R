@@ -43,3 +43,12 @@ names(test.proj.plan.id)
 
 test.proj.plan.code = fts.proj.by.plan.code("HSDN14")
 names(test.proj.plan.code)
+
+test.emergency.id = fts.emergency.id(611)
+names(test.emergency.id)
+
+test.emergency.year = fts.emergency.year(2013)
+names(test.emergency.year)
+
+test.emergency.iso3 = fts.emergency.iso3("SDN")
+names(test.emergency.iso3)

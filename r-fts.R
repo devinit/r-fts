@@ -243,4 +243,82 @@ fts.proj.by.plan.code = function(plan.code=NULL,auth=NULL){
   }
 }
 
+fts.emergency.id = function(id=NULL,auth=NULL){
+  base.url = paste0("https://api.hpc.tools/v1/public/emergency/id/",id)
+  if(is.null(id)){
+    stop("ID is a required field.")
+  }
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = data.frame(flatten(dat$data))
+    }
+    return(data)
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
+fts.emergency.year = function(year=NULL,auth=NULL){
+  base.url = paste0("https://api.hpc.tools/v1/public/emergency/year/",year)
+  if(is.null(year)){
+    stop("Year is a required field.")
+  }
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = rbindlist(lapply(lapply(dat$data,flatten),data.frame),fill=T)
+    }
+    return(data)
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
+fts.emergency.iso3 = function(iso3=NULL,auth=NULL){
+  base.url = paste0("https://api.hpc.tools/v1/public/emergency/country/",iso3)
+  if(is.null(iso3)){
+    stop("iso3 is a required field.")
+  }
+  if(!is.null(auth)){
+    res = GET(
+      base.url
+      ,authenticate(auth$user, auth$pass)
+    )
+  }else{
+    res = GET(base.url)
+  }
+  if(res$status_code==200){
+    dat = content(res)
+    if(length(dat$data)==0){
+      data = data.frame()
+    }else{
+      data = rbindlist(lapply(lapply(dat$data,flatten),data.frame),fill=T)
+    }
+    return(data)
+  }else{
+    stop("HTTP error: ",res$status_code)
+  }
+}
+
 
