@@ -25,6 +25,9 @@ proj = fts.proj.by.id(id=1,auth=auth)
 # Place r-fts.R in your working directory. You can then load the functions:
 source("r-fts.R")
 
+# Alternatively, source the code straight from Github
+source("https://raw.githubusercontent.com/devinit/r-fts/master/r-fts.R")
+
 # Returns report1, report2, report3, and report4 as lists
 # Each list has attributes data, and meta
 test.flow.group = fts.flow(
