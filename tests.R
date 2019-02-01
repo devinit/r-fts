@@ -52,3 +52,15 @@ names(test.emergency.year)
 
 test.emergency.iso3 = fts.emergency.iso3("SDN")
 names(test.emergency.iso3)
+
+test.plan.id = fts.plan.id(34)
+names(test.plan.id)
+
+test.plan.code = fts.plan.code("HAFG16")
+names(test.plan.code)
+
+test.plan.year = fts.plan.year(2013)
+names(test.plan.year)
+
+test.plan.iso3 = fts.plan.iso3("SDN")
+names(test.plan.iso3)
