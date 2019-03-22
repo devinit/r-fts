@@ -13,11 +13,11 @@ View(test.flow.group$report1$data)
 
 # Completely different structure w/o group param
 test.flow = fts.flow(
-  boundary="year=2015",
-  filterBy=c("destinationGlobalClusterCode:HEA","destinationLocationID:114,115")
+  boundary="year=2015&locationid=114",
+  filterBy=c("destinationGlobalClusterCode:HEA")
 )
 names(test.flow)
-View(test.flow$incoming)
+View(test.flow)
 
 # None of the RPM endpoints seem to work. They don't accept PUT or GET requests
 # e.g.

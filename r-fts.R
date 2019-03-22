@@ -8,6 +8,7 @@ flatten = function(x){
 }
 
 fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,auth=NULL){
+  page = 1
   base.url = paste0("https://api.hpc.tools/v1/public/fts/flow?",boundary)
   if(is.null(boundary)){
     stop("Boundary is a required field.")
@@ -32,15 +33,26 @@ fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,auth=NULL){
   if(res$status_code==200){
     dat = content(res)
     if("flows" %in% names(dat$data)){
-      data_list = list(
-        "incoming"=data.frame(dat$data$incoming,stringsAsFactors=F),
-        "outgoing"=data.frame(dat$data$outgoing,stringsAsFactors=F),
-        "internal"=data.frame(dat$data$internal,stringsAsFactors=F)
-      )
+      data_list = list()
       flows = dat$data$flows
       flow_df = rbindlist(lapply(flows,flatten),fill=T)
-      data_list[["flows"]] = flow_df
-      return(data_list)
+      data_list[[page]] = flow_df
+      while("nextLink" %in% names(dat$meta)){
+        page = page + 1
+        if(!is.null(auth)){
+          res = GET(
+            dat$meta$nextLink
+            ,authenticate(auth$user, auth$pass)
+          )
+        }else{
+          res = GET(base.url)
+        }
+        dat = content(res)
+        flows = dat$data$flows
+        flow_df = rbindlist(lapply(flows,flatten),fill=T)
+        data_list[[page]] = flow_df
+      }
+      return(rbindlist(data_list,fill=T))
     }else{
       data_list = list()
       for(name in names(dat$data)){
