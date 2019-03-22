@@ -45,12 +45,14 @@ flatten_flow = function(single_flow){
   
   for(i in 1:length(object_fields)){
     field_list = single_flow[object_fields[i]][[1]]
-    field_df = data.table(t(sapply(field_list,`[`,object_field_cols)))
-    field_df$type = sapply(field_df$type,`[`,1)
-    field_df_grouped = field_df[,.(id=paste(id,collapse=" | "),name=paste(name,collapse=" | ")),by=.(type)]
-    field_prefix = names(object_fields)[i]
-    flat_flow[,paste(field_prefix,field_df_grouped$type,"id",sep="_")] = field_df_grouped$id
-    flat_flow[,paste(field_prefix,field_df_grouped$type,"name",sep="_")] = field_df_grouped$name
+    if(length(field_list)>0){
+      field_df = data.table(t(sapply(field_list,`[`,object_field_cols)))
+      field_df$type = sapply(field_df$type,`[`,1)
+      field_df_grouped = field_df[,.(id=paste(id,collapse=" | "),name=paste(name,collapse=" | ")),by=.(type)]
+      field_prefix = names(object_fields)[i]
+      flat_flow[,paste(field_prefix,field_df_grouped$type,"id",sep="_")] = field_df_grouped$id
+      flat_flow[,paste(field_prefix,field_df_grouped$type,"name",sep="_")] = field_df_grouped$name
+    }
   }
   
   return(flat_flow)
