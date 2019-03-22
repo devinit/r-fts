@@ -73,6 +73,7 @@ fts.flow = function(boundary=NULL,auth=NULL){
   }
   if(res$status_code==200){
     dat = content(res)
+    rm(res)
     data_list = list()
     flows = dat$data$flows
     flow_df = rbindlist(lapply(flows,flatten_flow),fill=T)
@@ -88,10 +89,13 @@ fts.flow = function(boundary=NULL,auth=NULL){
       }else{
         res = GET(dat$meta$nextLink)
       }
-      dat = content(res)
-      flows = dat$data$flows
-      flow_df = rbindlist(lapply(flows,flatten_flow),fill=T)
-      data_list[[page]] = flow_df
+      if(res$status_code==200){
+        dat = content(res)
+        rm(res)
+        flows = dat$data$flows
+        flow_df = rbindlist(lapply(flows,flatten_flow),fill=T)
+        data_list[[page]] = flow_df
+      }
     }
     return(rbindlist(data_list,fill=T))
   }else{
