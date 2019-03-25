@@ -105,8 +105,12 @@ fts.flow = function(boundary=NULL,auth=NULL){
     stop("HTTP error: ",res$status_code)
   }
 }
-auth=NULL # Fill this in, but don't save it
-
+args = commandArgs(trailingOnly=TRUE)
+if(length(args)==0){
+  auth=NULL
+}else{
+  auth = list("user"=args[1],"pass"=args[2])
+}
 
 years = c(2000:2022)
 boundary = paste0("year=",paste(years,collapse="%2C"))
