@@ -32,6 +32,7 @@ for(i in 1:length(project_ids)){
   project_url = paste0(base_url, project_id)
   project_json = fromJSON(project_url, simplifyVector=F)
   project = project_json$data$projectVersion
+  message(project$projectVersionPlans[[1]]$workflowStatusOption$type)
   field_definitions = list()
   for(def in project$plans[[1]]$conditionFields){
     field_definitions[[as.character(def$id)]] = def
@@ -43,6 +44,7 @@ for(i in 1:length(project_ids)){
     if(!is.null(def) & !is.null(field$value)){
       project_df = data.frame(
         "project_id" = project_id,
+        "currently_requested_funds" = project$currentRequestedFunds,
         "plan_name" = project$plans[[1]]$planVersion$name,
         "question" = def$name,
         "answer" = field$value
