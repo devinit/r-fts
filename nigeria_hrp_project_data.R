@@ -57,6 +57,8 @@ base_url = "https://api.hpc.tools/v2/public/project/"
 
 project_list = list()
 project_index = 1
+location_list = list()
+location_index = 1
 pb = txtProgressBar(max=nrow(project_ids),style=3)
 for(i in 1:nrow(project_ids)){
   # for(i in 1:10){
@@ -67,6 +69,44 @@ for(i in 1:nrow(project_ids)){
   project_url = paste0(base_url, project_id)
   project_json = fromJSON(project_url, simplifyVector=F)
   project = project_json$data$projectVersion
+  locations = project$locations
+  if(length(locations)>0){
+    for(j in 1:length(locations)){
+      location = locations[[j]]
+      location_id = location$id
+      location_name = location$name
+      location_iso3 = location$iso3
+      if(is.null(location_iso3)){
+        location_iso3 = NA
+      }
+      location_pcode = location$pcode
+      if(is.null(location_pcode)){
+        location_pcode = NA
+      }
+      location_admin_level = location$adminLevel
+      location_lat = location$latitude
+      if(is.null(location_lat)){
+        location_lat = NA
+      }
+      location_lon = location$longitude
+      if(is.null(location_lon)){
+        location_lon = NA
+      }
+      tmp = data.frame(
+        project_id,
+        project_year,
+        location_id,
+        location_name,
+        location_iso3,
+        location_pcode,
+        location_admin_level,
+        location_lat,
+        location_lon
+      )
+      location_list[[location_index]] = tmp
+      location_index = location_index + 1
+    }
+  }
   global_clusters_json = project$globalClusters
   global_clusters = c()
   for(global_cluster in global_clusters_json){
@@ -134,3 +174,7 @@ fwrite(project_fields,"project_fields_nga.csv")
 
 unique_project_df = project_fields[,c("project_id", "project_year", "plan_id", "plan_name", "currently_requested_funds")]
 fwrite(unique_project_df, "unique_projects_nga.csv")
+
+location_dataset = rbindlist(location_list)
+save(location_dataset, file="location_dataset_nga.RData")
+fwrite(location_dataset, "location_dataset_nga.csv")
