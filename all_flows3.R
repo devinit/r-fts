@@ -38,7 +38,7 @@ object_fields = c(
 
 object_field_cols = c("type","id","name")
 
-other_multi_fields = c("keywords") # TODO: implement if necessary
+other_multi_fields = c("keywords")
 
 flatten_flow = function(single_flow){
   flat_flow = data.frame(t(unlist(single_flow[single_or_empty_fields])),stringsAsFactors=F)
@@ -53,6 +53,10 @@ flatten_flow = function(single_flow){
       flat_flow[,paste(field_prefix,field_df_grouped$type,"id",sep="_")] = field_df_grouped$id
       flat_flow[,paste(field_prefix,field_df_grouped$type,"name",sep="_")] = field_df_grouped$name
     }
+  }
+  
+  for(field in other_multi_fields){
+    flat_flow[,field] = paste(single_flow[[field]],collapse=" | ")
   }
   
   flat_flow["report_type"] = single_flow$reportDetails[[1]]$sourceType
