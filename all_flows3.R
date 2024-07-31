@@ -9,7 +9,7 @@ single_or_empty_fields = c(
   "id"
   ,"amountUSD"
   ,"budgetYear"
-  ,"conributionType"
+  ,"contributionType"
   ,"createdAt"
   ,"date"
   ,"decisionDate"
@@ -36,9 +36,12 @@ object_fields = c(
   "destination"="destinationObjects"
 )
 
-object_field_cols = c("type","id","name")
+object_field_cols = c("type","id","name","behavior")
 
-other_multi_fields = c("keywords")
+object_organization_lists = c("organizationTypes","organizationSubTypes","organizationLevels")
+object_project_lists = c("code")
+
+other_multi_fields = c("keywords", "childFlowIds")
 
 flatten_flow = function(single_flow){
   flat_flow = data.frame(t(unlist(single_flow[single_or_empty_fields])),stringsAsFactors=F)
@@ -48,10 +51,35 @@ flatten_flow = function(single_flow){
     if(length(field_list)>0){
       field_df = data.table(t(sapply(field_list,`[`,object_field_cols)))
       field_df$type = sapply(field_df$type,`[`,1)
-      field_df_grouped = field_df[,.(id=paste(id,collapse=" | "),name=paste(name,collapse=" | ")),by=.(type)]
+      field_df_grouped = field_df[,.(
+        id=paste(id,collapse=" | "),
+        name=paste(name,collapse=" | "),
+        behavior=paste(behavior,collapse=" | ")
+      )
+        ,by=.(type)]
       field_prefix = names(object_fields)[i]
       flat_flow[,paste(field_prefix,field_df_grouped$type,"id",sep="_")] = field_df_grouped$id
       flat_flow[,paste(field_prefix,field_df_grouped$type,"name",sep="_")] = field_df_grouped$name
+      flat_flow[,paste(field_prefix,field_df_grouped$type,"behavior",sep="_")] = field_df_grouped$behavior
+
+      org_type_indices = which(sapply(field_list,`[`, i="type") == "Organization")
+      org_specific_df = data.table(t(sapply(field_list[org_type_indices], `[`, object_organization_lists)))
+      for(org_var in object_organization_lists){
+        if(org_var %in% names(org_specific_df)){
+          org_specific_df[,org_var] = paste(unlist(org_specific_df[,org_var,with=F]),collapse=" | ")
+          flat_flow[,paste(field_prefix,"Organization",org_var,sep="_")] = paste(org_specific_df[,org_var,with=F],collapse=" | ")
+        }
+      }
+
+      project_type_indices = which(sapply(field_list,`[`, i="type") == "Project")
+      project_specific_df = data.table(t(sapply(field_list[project_type_indices], `[`, object_project_lists)))
+      for(project_var in object_project_lists){
+        if(project_var %in% names(project_specific_df)){
+          project_specific_df[,project_var] = paste(unlist(project_specific_df[,project_var,with=F]),collapse=" | ")
+          flat_flow[,paste(field_prefix,"Project",project_var,sep="_")] = paste(project_specific_df[,project_var,with=F],collapse=" | ")
+        }
+      }
+
     }
   }
   
@@ -94,14 +122,14 @@ fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,auth=NULL){
     dat = content(res)
     rm(res)
     max_page = ceiling(dat$meta$count/200)
-    pb = progress_bar$new(total=max_page,format=" [:bar] :percent Elapsed: :elapsed; Remaining: :eta")
+    pb = txtProgressBar(max=max_page, style=3)
     data_list = list()
     flows = dat$data$flows
     flow_df = rbindlist(lapply(flows,flatten_flow),fill=T)
     data_list[[page]] = flow_df
     while("nextLink" %in% names(dat$meta)){
       page = page + 1
-      pb$tick()
+      setTxtProgressBar(pb, page)
       if(!is.null(auth)){
         res = GET(
           dat$meta$nextLink
@@ -118,6 +146,7 @@ fts.flow = function(boundary=NULL,filterBy=NULL,groupBy=NULL,auth=NULL){
         data_list[[page]] = flow_df
       }
     }
+    close(pb)
     return(rbindlist(data_list,fill=T))
   }else{
     stop("HTTP error: ",res$status_code)
