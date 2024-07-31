@@ -67,7 +67,7 @@ flatten_flow = function(single_flow){
       for(org_var in object_organization_lists){
         if(org_var %in% names(org_specific_df)){
           org_specific_df[,org_var] = paste(unlist(org_specific_df[,org_var,with=F]),collapse=" | ")
-          flat_flow[,paste(field_prefix,"Organization",org_var,sep="_")] = paste(org_specific_df[,org_var,with=F],collapse=" | ")
+          flat_flow[,paste(field_prefix,"Organization",org_var,sep="_")] = paste(unlist(org_specific_df[,org_var,with=F]),collapse=" | ")
         }
       }
 
@@ -76,7 +76,7 @@ flatten_flow = function(single_flow){
       for(project_var in object_project_lists){
         if(project_var %in% names(project_specific_df)){
           project_specific_df[,project_var] = paste(unlist(project_specific_df[,project_var,with=F]),collapse=" | ")
-          flat_flow[,paste(field_prefix,"Project",project_var,sep="_")] = paste(project_specific_df[,project_var,with=F],collapse=" | ")
+          flat_flow[,paste(field_prefix,"Project",project_var,sep="_")] = paste(unlist(project_specific_df[,project_var,with=F]),collapse=" | ")
         }
       }
 
@@ -159,10 +159,14 @@ if(length(args)==0){
   auth = list("user"=args[1],"pass"=args[2])
 }
 
-years = c(2000:2030)
+# years = c(2000:2030)
+years = c(2022)
 boundary = paste0("year=",paste(years,collapse="%2C"))
 filterBy = c("destinationYear:2021%2C2022%2C2023")
 
+start_time = Sys.time()
 flows = fts.flow(boundary,filterBy=filterBy,auth=auth)
-fname = "all_21-23.csv"
-fwrite(flows,fname)
+end_time = Sys.time()
+end_time - start_time
+# fname = "all_21-23.csv"
+# fwrite(flows,fname)
